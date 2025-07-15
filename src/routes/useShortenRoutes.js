@@ -1,6 +1,8 @@
 import express from "express";
+import { createUrlMapping } from "../controllers/urlController.js"
 
 const router = express.Router();
 
 router.post('/', createUrlMapping);
-router.get('/:shortCode', getOriginalUrl);
+
+export default router;

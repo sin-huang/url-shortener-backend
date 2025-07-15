@@ -10,7 +10,6 @@ function generateCode(len = 6) {
 const createUrlMapping = async (req, res) => {
     const { originalUrl } = req.body;
 
-
     try {
         const existing = await db
             .select()
@@ -22,7 +21,7 @@ const createUrlMapping = async (req, res) => {
             const { shortCode } = existing[0];
             return res.status(200).json({
                 message: 'Short URL already exists',
-                shortUrl: `https://localhost:3000/${shortCode}`,
+                shortUrl: `http://localhost:3000/${shortCode}`,
             });
         }
         const shortCode = generateCode();
@@ -33,7 +32,7 @@ const createUrlMapping = async (req, res) => {
 
         res.json({
             message: "Short URL already exists",
-            shortUrl: `https://localhost:3000/${shortCode}`,
+            shortUrl: `http://localhost:3000/${shortCode}`,
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
