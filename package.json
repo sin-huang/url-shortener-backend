@@ -1,0 +1,28 @@
+{
+  "name": "url-shortener-backend",
+  "version": "1.0.0",
+  "description": "這是一個簡單的縮網址網站，使用者可以貼上原始網址併產生對應的一組新網址。 在瀏覽器貼上該網址即可跳轉到原網址。",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sin-huang/url-shortener-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sin-huang/url-shortener-backend/issues"
+  },
+  "homepage": "https://github.com/sin-huang/url-shortener-backend#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.51.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.44.3",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10"
+  }
+}
