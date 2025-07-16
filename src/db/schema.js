@@ -4,5 +4,6 @@ export const shortUrls = pgTable("short_urls", {
     id: serial("id").primaryKey(),
     originalUrl: text("original_url").notNull(),
     shortCode: varchar("short_code", { length: 10 }).notNull(),
+    password: text("password"),
     createdAt: timestamp("created_at").defaultNow(),
 });
