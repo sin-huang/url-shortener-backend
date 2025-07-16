@@ -1,43 +1,98 @@
 import { db } from '../db/index.js';
 import { shortUrls } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid';
+import bcrypt from 'bcrypt';
 
 function generateCode(len = 6) {
     return nanoid(len);
 }
 
 const createUrlMapping = async (req, res) => {
-    const { originalUrl } = req.body;
+    const { originalUrl, customUrl, password } = req.body
+
+    if (!originalUrl) {
+        return res.status(400).json({ error: '缺少必要欄位 originalUrl' })
+    }
 
     try {
-        const existing = await db
-            .select()
-            .from(shortUrls)
-            .where(eq(shortUrls.originalUrl, originalUrl))
-            .limit(1);
-
-        if (existing.length > 0) {
-            const { shortCode } = existing[0];
-            return res.status(200).json({
-                message: 'Short URL already exists',
-                shortUrl: `http://localhost:3000/${shortCode}`,
-            });
+        let passwordHash = null
+        if (password) {
+            const salt = await bcrypt.genSalt(10)
+            passwordHash = await bcrypt.hash(password, salt)
         }
-        const shortCode = generateCode();
+
+        // 有自訂短網址的情況
+        if (customUrl) {
+            // 檢查 customUrl 是否已經被使用
+            const conflict = await db
+                .select()
+                .from(shortUrls)
+                .where(eq(shortUrls.shortCode, customUrl))
+                .limit(1)
+
+            if (conflict.length > 0) {
+                return res.status(409).json({ error: '短網址已被使用，請換一個' })
+            }
+
+            // 新增一筆（即使原始網址存在，也視為另一筆）
+            await db.insert(shortUrls).values({
+                originalUrl,
+                shortCode: customUrl,
+                password: passwordHash,
+            })
+
+            return res.status(201).json({
+                message: '已成功建立自訂短網址',
+                shortUrl: `http://localhost:3000/${customUrl}`,
+            })
+        }
+
+        // 沒有自訂，檢查是否已存在相同 originalUrl 的紀錄
+        if (!customUrl) {
+            const existing = await db
+                .select()
+                .from(shortUrls)
+                .where(
+                    eq(shortUrls.originalUrl, originalUrl)
+                )
+                .limit(1)
+            // 只有在都無密碼設定才可共用    
+            if (existing.length > 0 && existing[0].password === null && passwordHash === null) {
+                return res.status(200).json({
+                    message: '已存在相同網址的紀錄',
+                    shortUrl: `http://localhost:3000/${existing[0].shortCode}`,
+                })
+            }
+        }
+
+        // 尚未存在，產生新短碼
+        let shortCode
+        while (true) {
+            shortCode = generateCode()
+            const taken = await db
+                .select()
+                .from(shortUrls)
+                .where(eq(shortUrls.shortCode, shortCode))
+                .limit(1)
+            if (taken.length === 0) break
+        }
+
         await db.insert(shortUrls).values({
             originalUrl,
             shortCode,
-        });
+            password: passwordHash,
+        })
 
-        res.json({
-            message: "Short URL already exists",
+        return res.status(201).json({
+            message: '成功建立短網址',
             shortUrl: `http://localhost:3000/${shortCode}`,
-        });
+        })
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('[createUrlMapping error]', err)
+        res.status(500).json({ error: 'Server error' })
     }
-};
+}
 
 const getOriginalUrl = async (req, res) => {
     const { shortCode } = req.params;
@@ -53,10 +108,39 @@ const getOriginalUrl = async (req, res) => {
             return res.status(404).send('Not found');
         }
 
-        res.redirect(result[0].originalUrl);
+        const record = result[0]
+
+        if (record.password) {
+            // 有密碼 ➜ 顯示密碼輸入頁
+            return res.redirect(`http://localhost:5173/verify/${shortCode}`)
+        }
+
+        return res.redirect(record.originalUrl)
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-export { createUrlMapping, getOriginalUrl };
+const verifyPassword = async (req, res) => {
+    const { shortCode, password } = req.body
+
+    const result = await db
+        .select()
+        .from(shortUrls)
+        .where(eq(shortUrls.shortCode, shortCode))
+        .limit(1)
+
+    if (!result.length) return res.status(404).json({ error: 'Not found' })
+
+    const record = result[0]
+
+    const match = await bcrypt.compare(password, record.password)
+
+    if (!match) {
+        return res.status(401).json({ error: 'Wrong password' })
+    }
+
+    return res.json({ originalUrl: record.originalUrl })
+}
+
+export { createUrlMapping, getOriginalUrl, verifyPassword };
