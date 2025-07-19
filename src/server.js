@@ -5,9 +5,6 @@ dotenv.config();
 import useShortenRoutes from "./routes/useShortenRoutes.js";
 import metaRoutes from "./routes/metaRoutes.js";
 import { getOriginalUrl, verifyPassword} from "./controllers/urlController.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import axios from "axios";
-import * as cheerio  from "cheerio";
 
 const PORT = process.env.PORT;
 
