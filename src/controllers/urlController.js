@@ -9,7 +9,7 @@ function generateCode(len = 6) {
 }
 
 const createUrlMapping = async (req, res) => {
-    const { originalUrl, customUrl, password } = req.body
+    const { originalUrl, customUrl, password, title, description, summary } = req.body
 
     if (!originalUrl) {
         return res.status(400).json({ error: '缺少必要欄位 originalUrl' })
@@ -40,6 +40,9 @@ const createUrlMapping = async (req, res) => {
                 originalUrl,
                 shortCode: customUrl,
                 password: passwordHash,
+                title,
+                description,
+                summary,
             })
 
             return res.status(201).json({
@@ -82,6 +85,9 @@ const createUrlMapping = async (req, res) => {
             originalUrl,
             shortCode,
             password: passwordHash,
+            title,
+            description,
+            summary,
         })
 
         return res.status(201).json({
