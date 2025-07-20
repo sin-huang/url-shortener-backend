@@ -5,6 +5,7 @@ dotenv.config();
 import { createUrlMapping, getOriginalUrl, verifyPassword, toggle, getNote} from "./controllers/urlController.js";
 
 const PORT = process.env.PORT;
+const backendUrl = process.env.BACKEND_URL;
 
 const app = express();
 
@@ -18,5 +19,5 @@ app.patch("/:shortCode/enabled",toggle);
 app.post("/verify", verifyPassword);
 
 app.listen(PORT,()=>{
-    console.log(` Server running on http://localhost:${PORT}`);
+    console.log(` Server running on ${backendUrl}`);
 })

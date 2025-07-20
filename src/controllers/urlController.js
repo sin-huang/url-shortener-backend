@@ -3,6 +3,11 @@ import { shortUrls } from '../db/schema.js';
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+dotenv.config(); 
+
+const backendUrl = process.env.BACKEND_URL;
+const frontendUrl = process.env.FRONTEND_URL;
 
 function generateCode(len = 6) {
     return nanoid(len);
@@ -45,7 +50,7 @@ const createUrlMapping = async (req, res) => {
 
             return res.status(201).json({
                 message: '已成功建立自訂短網址',
-                shortUrl: `http://localhost:3000/${customUrl}`,
+                shortUrl: `${backendUrl}/${customUrl}`,
             })
         }
 
@@ -62,7 +67,7 @@ const createUrlMapping = async (req, res) => {
             if (existing.length > 0 && existing[0].password === null && passwordHash === null) {
                 return res.status(200).json({
                     message: '已存在相同網址的紀錄',
-                    shortUrl: `http://localhost:3000/${existing[0].shortCode}`,
+                    shortUrl: `${backendUrl}/${existing[0].shortCode}`,
                 })
             }
         }
@@ -88,7 +93,7 @@ const createUrlMapping = async (req, res) => {
 
         return res.status(201).json({
             message: '成功建立短網址',
-            shortUrl: `http://localhost:3000/${shortCode}`,
+            shortUrl: `${backendUrl}/${shortCode}`,
         })
     } catch (err) {
         console.error('[createUrlMapping error]', err)
@@ -113,13 +118,13 @@ const getOriginalUrl = async (req, res) => {
         const record = result[0]
 
         if (!record.enabled) {
-            return res.redirect(`http://localhost:5173/disabled`)
+            return res.redirect(`${frontendUrl}/disabled`)
         }
 
 
         if (record.password) {
             // 有密碼 ➜ 顯示密碼輸入頁
-            return res.redirect(`http://localhost:5173/verify/${shortCode}`)
+            return res.redirect(`${frontendUrl}/verify/${shortCode}`)
         }
 
         return res.redirect(record.originalUrl)
