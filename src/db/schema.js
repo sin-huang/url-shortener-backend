@@ -1,3 +1,4 @@
+import { boolean } from "drizzle-orm/gel-core";
 import { pgTable, serial, text, varchar, timestamp } from "drizzle-orm/pg-core";
 
 export const shortUrls = pgTable("short_urls", {
@@ -5,8 +6,7 @@ export const shortUrls = pgTable("short_urls", {
     originalUrl: text("original_url").notNull(),
     shortCode: varchar("short_code", { length: 10 }).notNull(),
     password: text("password"),
-    title: text("title"),           
-    description: text("description"), 
-    summary: text("summary"),       
+    note: text("note"),
+    enabled: boolean("enabled").default(true).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
 });

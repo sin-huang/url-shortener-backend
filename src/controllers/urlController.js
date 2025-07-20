@@ -9,7 +9,7 @@ function generateCode(len = 6) {
 }
 
 const createUrlMapping = async (req, res) => {
-    const { originalUrl, customUrl, password, title, description, summary } = req.body
+    const { originalUrl, customUrl, password, note } = req.body
 
     if (!originalUrl) {
         return res.status(400).json({ error: '缺少必要欄位 originalUrl' })
@@ -40,9 +40,7 @@ const createUrlMapping = async (req, res) => {
                 originalUrl,
                 shortCode: customUrl,
                 password: passwordHash,
-                title,
-                description,
-                summary,
+                note,
             })
 
             return res.status(201).json({
@@ -85,9 +83,7 @@ const createUrlMapping = async (req, res) => {
             originalUrl,
             shortCode,
             password: passwordHash,
-            title,
-            description,
-            summary,
+            note,
         })
 
         return res.status(201).json({
@@ -96,7 +92,7 @@ const createUrlMapping = async (req, res) => {
         })
     } catch (err) {
         console.error('[createUrlMapping error]', err)
-        res.status(500).json({ error: 'Server error' })
+        res.status(500).json({ error: '伺服器錯誤，請稍後再試' })
     }
 }
 
@@ -111,10 +107,15 @@ const getOriginalUrl = async (req, res) => {
             .limit(1);
 
         if (!result.length) {
-            return res.status(404).send('Not found');
+            return res.status(404).send('找不到該短網址');
         }
 
         const record = result[0]
+
+        if (!record.enabled) {
+            return res.redirect(`http://localhost:5173/disabled`)
+        }
+
 
         if (record.password) {
             // 有密碼 ➜ 顯示密碼輸入頁
@@ -136,17 +137,56 @@ const verifyPassword = async (req, res) => {
         .where(eq(shortUrls.shortCode, shortCode))
         .limit(1)
 
-    if (!result.length) return res.status(404).json({ error: 'Not found' })
+    if (!result.length) return res.status(404).json({ error: '找不到該短網址' })
 
     const record = result[0]
 
     const match = await bcrypt.compare(password, record.password)
 
     if (!match) {
-        return res.status(401).json({ error: 'Wrong password' })
+        return res.status(401).json({ error: '密碼錯誤' })
     }
 
     return res.json({ originalUrl: record.originalUrl })
 }
 
-export { createUrlMapping, getOriginalUrl, verifyPassword };
+const toggle = async (req, res) => {
+    const { shortCode } = req.params;
+    const { enabled } = req.body;
+
+    try {
+        await db.update(shortUrls)
+            .set({ enabled })
+            .where(eq(shortUrls.shortCode, shortCode));
+
+        res.json({ message: '啟用狀態已更新' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: '更新失敗' });
+    }
+}
+
+const getNote = async(req, res) => {
+    const { shortCode } = req.params
+
+    try {
+        const result = await db
+            .select({
+                note: shortUrls.note,
+            })
+            .from(shortUrls)
+            .where(eq(shortUrls.shortCode, shortCode))
+            .limit(1)
+
+        if (!result.length) {
+            return res.status(404).json({ message: '找不到此短網址' })
+        }
+
+        res.json({ note: result[0].note || '' })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: '無法取得備註' })
+    }
+}
+
+export { createUrlMapping, getOriginalUrl, verifyPassword, toggle, getNote };
