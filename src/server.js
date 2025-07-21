@@ -14,7 +14,12 @@ const backendUrl = process.env.BACKEND_URL;
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://reurl.zeabur.app', 
+  methods: ['GET', 'POST', 'PATCH'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
+}));
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
