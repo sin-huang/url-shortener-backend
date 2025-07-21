@@ -22,7 +22,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
  * @route POST /shorten
  * @tags Shorten
  * @description 建立短網址，可選擇自訂代碼、密碼與備註
- * @bodyContent {ShortenRequest} application/json
+ * @body { originalUrl: string, customUrl?: string, password?: string, note?: string }
  * @response 201 - Created
  */
 app.post("/shorten", createUrlMapping);
@@ -57,12 +57,12 @@ app.post("/verify", verifyPassword);
 app.patch("/:shortCode/enabled",toggle);
 
 /**
- * @route PATCH /:shortCode/enabled
- * @tags Security
- * @description 啟用或停用指定短網址
+ * @route GET /:shortCode/note
+ * @tags Shorten
+ * @description 取得指定短網址的備註
  * @param {string} shortCode.path.required - 短網址代碼
- * @body { enabled: boolean }
  * @response 200 - OK
+ * @response 404 - Not Found
  */
 app.get("/:shortCode/note", getNote);
 
