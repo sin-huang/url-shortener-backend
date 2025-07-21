@@ -146,8 +146,8 @@ const verifyPassword = async (req, res) => {
 
     const record = result[0]
 
-    const match = await bcrypt.compare(password, record.password)
-
+    const match = bcrypt.compare(password, record.password)
+    
     if (!match) {
         return res.status(401).json({ error: '密碼錯誤' })
     }
