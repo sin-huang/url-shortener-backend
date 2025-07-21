@@ -54,8 +54,10 @@ Make sure you have Node.js and npm installed
    ```bash
    npm install
    ```
-   
-3. Start the development server
+3. Before running, copy the `.env.template` file and rename it to `.env`.
+   Then, fill in the required environment variables based on the provided template.
+
+4. Start the development server
    ```bash
    npm run dev
    ```
