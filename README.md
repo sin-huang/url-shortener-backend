@@ -6,7 +6,6 @@ Once generated, the short link can be pasted into any browser to automatically r
 ### Try It Now
 
 👉 [Click me](https://reurl.zeabur.app/)
-
 ### logo
 
 <img width="128" height="128" alt="image" src="https://github.com/user-attachments/assets/79b50709-951d-4de5-8471-ba7cf361410d" />
@@ -15,6 +14,11 @@ The logo symbolizes the original URL and the shortened URL as two entities of th
 Though they may appear different, they are inherently connected and interchangeable—made possible through seamless communication handled by the backend server.
 
 ## DEMO 
+
+[![Demo Video](https://img.youtube.com/vi/_RE2fz2E9fE/0.jpg)](https://www.youtube.com/watch?v=_RE2fz2E9fE)
+
+### API documents
+👉 [Click me](https://reurl-backend.zeabur.app/api-docs)
 
 ## Tech Stack
 
